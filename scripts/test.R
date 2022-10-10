@@ -54,7 +54,8 @@ all_yr_uni <- gpd_uni %>%
 print(all_yr_uni[, c("EmployerName.y"), drop=FALSE], n=20)
   
 # -------*--------
-# Shows the trend for the Differen in Mean Hourly Rates from 2017-18 to 2021-22
+# 2nd part of the hw
+# Shows the trend for the Difference in Mean Hourly Rates from 2017-18 to 2021-22
 # split by Pre and Post '92 unis as well as the rate of change from Y1 to Y5
 gpd_uni %>%
   group_by(EmployerSize, pre92, AssmntYr) %>%
