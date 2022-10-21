@@ -28,13 +28,58 @@ payGapData <- payGapData %>%
                           str_sub(DueDate, 1, 4) == '2019' ~ '2018/19',
                           str_sub(DueDate, 1, 4) == '2018' ~ '2017/18'))
 
+# -------*--------
+# Figure 1 - to reorder later
+# Nitin
+# Box plot showing the difference in the average pay for mean and women across 5 
+# the year period. We show the data separately for Pre and Post '92 unis
+# Write-up - DRAFT, to update
+# The graph shows how much of difference exists in the pay between men and 
+# women in UK universities. The value shown is the average difference across the
+# universities. blah blah blah
+l_subtitle = "While we see improvements, there continues to be significant 
+disparity in pay, especially for universities established prior to 1992"
 
-
-# Shows the trend for the Difference in Mean Hourly Rates from 2017-18 to 2021-22
-# split by Pre and Post '92 unis as well as the rate of change from Y1 to Y5
 payGapData %>%
-  group_by(EmployerSize, pre92, year) %>%
-  summarize(mean_diffhrlypct = mean(DiffMeanHourlyPercent)) %>%
-  pivot_wider(names_from = year,
-              values_from = mean_diffhrlypct) %>%
-  mutate(ChgPct18to22 = (`2017/18`-`2021/22`)/`2017/18`*100) 
+  # Limits columns to only required, will use data for all 5 years
+  select(EmployerName, DiffMeanHourlyPercent, pre92, year) %>%
+  ggplot(aes(x = year, y = DiffMeanHourlyPercent, fill = pre92)) +
+  # Remove outliers as they are not relevant for this plot
+  geom_boxplot(outlier.shape=NA) +
+  # For the appearance of the plot background
+  theme_bw() +
+  # Customise the scaling displayed for y-axis
+  scale_y_continuous(breaks = seq(0, 30, by = 5)) +
+  # Labels
+  labs(x = "Period of Submission", y = "Avg difference in hourly pay(%)", 
+       fill ="Pre '92\nUniversity ",
+       title = "Difference in pay for men and women employed in universities",
+       subtitle = gsub("\n", "", l_subtitle),
+       caption = "Source: UK Government Gender Pay Data, 2018 to 2022") +
+  # Annotation for UoS
+  # Refer https://r-graph-gallery.com/42-colors-names.html for colour names
+  annotate("point", x = "2017/18", y = 19,
+           colour = "cornflowerblue", size = 2) +
+  annotate("point", x = "2018/19", y = 17.9,
+           colour = "cornflowerblue", size = 2) +
+  annotate("point", x = "2019/20", y = 17.8,
+           colour = "cornflowerblue", size = 2) +
+  annotate("point", x = "2020/21", y = 16.5,
+           colour = "cornflowerblue", size = 2) +
+  annotate("point", x = "2021/22", y = 15.8,
+           colour = "cornflowerblue", size = 2) +
+  # For an arrow pointing to the last UoS annotation
+  annotate(
+    geom = "curve", x = 4.6, y = 22, xend = "2021/22", yend = 16, 
+    colour = "cornflowerblue", curvature = .1, 
+    arrow = arrow(length = unit(2, "mm"))
+  ) +
+  # For text for UoS
+  annotate(geom = "text", x = 4.3, y = 24, label = "University of\n   Sheffield", 
+           colour = "cornflowerblue", hjust = "left", size = 3) +
+  #For pre92 colour
+  # Refer https://r-graphics.org/recipe-colors-palette-discrete for palletes
+  # We should try to use the same palletes across all plots
+  scale_fill_brewer(palette = "Paired", breaks=c('yes', 'no')) 
+
+
