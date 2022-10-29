@@ -1,0 +1,137 @@
+---
+title: "The Gender Pay Gap in UK Universities"
+author: "Jeremy Oakley and Jill Johnson (Group 1)"
+date: "23/09/2022"
+output: 
+  html_document:
+    theme: yeti
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, 
+                      message = FALSE, 
+                      warning = FALSE)
+```
+
+
+```{r import data}
+library(tidyverse)
+
+
+pay17 <- read_csv("../data/UK Gender Pay Gap Data - 2017 to 2018.csv") 
+
+pay18 <- read_csv("../data/UK Gender Pay Gap Data - 2018 to 2019.csv") 
+
+pay19 <- read_csv("../data/UK Gender Pay Gap Data - 2019 to 2020.csv") 
+
+pay20 <- read_csv("../data/UK Gender Pay Gap Data - 2020 to 2021.csv") 
+
+pay21 <- read_csv("../data/UK Gender Pay Gap Data - 2021 to 2022.csv") 
+
+
+universities <- read_csv("../data/universities.csv")
+
+# Join with the university data and combine ----
+
+# For each pay gap dataset, will add the year, 
+# and *discard* the EmployerName column
+# This ensures EmployerName is drawn from the universities
+# data frame only
+
+pay17year <- pay17 %>%
+  mutate(year = "2017/18") %>%
+  select(-EmployerName) %>%
+  inner_join(universities, by = "EmployerId")
+
+
+pay18year <- pay18 %>%
+  mutate(year = "2018/19") %>%
+  select(-EmployerName) %>%
+  inner_join(universities, by = "EmployerId")
+
+pay19year <- pay19 %>%
+  mutate(year = "2019/20") %>%
+  select(-EmployerName) %>%
+  inner_join(universities, by = "EmployerId")
+
+pay20year <- pay20 %>%
+  mutate(year = "2020/21") %>%
+  select(-EmployerName) %>%
+  inner_join(universities, by = "EmployerId")
+
+pay21year <- pay21 %>%
+  mutate(year = "2021/22") %>%
+  select(-EmployerName) %>%
+  inner_join(universities, by = "EmployerId")
+
+
+
+payGapData <- rbind(pay17year, pay18year,
+                    pay19year, pay20year,
+                    pay21year)
+payGapDataLong <- payGapData %>%
+  pivot_longer(DiffMeanHourlyPercent:FemaleTopQuartile, 
+               names_to = "payGapMeasure",
+               values_to = "value") %>%
+  select(EmployerName, year, payGapMeasure, value, pre92)
+
+
+```
+
+
+Some background text...
+
+```{r the ugly plot}
+payQuartiles <- unique(payGapDataLong$payGapMeasure)[c(8, 10, 12, 14)]
+
+payGapDataLong %>% 
+  filter(payGapMeasure %in% payQuartiles) %>%
+  filter(year == "2017/18") %>%
+  ggplot(aes(x = payGapMeasure, y = value, colour = pre92)) +
+  geom_boxplot() 
+```
+
+
+
+```{r improved plot}
+
+payGapDataLong %>% 
+  filter(payGapMeasure %in% payQuartiles) %>%
+  filter(year == "2017/18") %>%
+  select(EmployerName, pre92, year, payGapMeasure, value) %>%
+  ggplot(aes(y = payGapMeasure, x = value, colour = pre92)) +
+  geom_boxplot() +
+  labs(title = "Plot conclusion", subtitle = "Plot title", 
+       caption = "Data source")
+```
+
+
+```{r box plot improved}
+payGapDataLong %>% 
+  filter(payGapMeasure %in% payQuartiles) %>%
+  mutate(payGapMeasure = 
+           recode_factor(payGapMeasure,
+                         FemaleLowerQuartile = "Bottom pay quartile",
+                         FemaleLowerMiddleQuartile = "Lower middle pay quartile",
+                         FemaleUpperMiddleQuartile = "Upper middle pay quartile",
+                         FemaleTopQuartile = "Top pay quartile")) %>%
+  mutate(institution = 
+           recode_factor(pre92,
+                         yes = "Pre-92",
+                         no = "Post-92")) %>%
+  ggplot(aes(y = payGapMeasure, x = value / 100,
+             colour = institution)) +
+  geom_boxplot() +
+  labs(title = "Plot conclusion", subtitle = "Plot title", 
+       caption = "Data source",
+       y = "",
+       x = "Proportion of female employees in pay quartile") +
+  scale_x_continuous(labels = scales::percent) +
+  theme_classic()
+```
+
+Some closing text...
+
+## Data sources
+
+Data obtained from...

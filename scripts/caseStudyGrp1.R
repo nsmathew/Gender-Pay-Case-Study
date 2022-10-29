@@ -1,3 +1,4 @@
+
 # -------*--------
 # Load libraries
 library(tidyverse)
@@ -38,48 +39,52 @@ payGapData <- payGapData %>%
 # women in UK universities. The value shown is the average difference across the
 # universities. blah blah blah
 l_subtitle = "While we see improvements, there continues to be significant 
-disparity in pay, especially for universities established prior to 1992"
+disparity in pay, more so for universities established prior to 1992"
 
 payGapData %>%
   # Limits columns to only required, will use data for all 5 years
   select(EmployerName, DiffMeanHourlyPercent, pre92, year) %>%
-  ggplot(aes(x = year, y = DiffMeanHourlyPercent, fill = pre92)) +
+  mutate(uni_type = recode_factor(pre92, 
+                                 yes = "Pre '92",
+                                 no = "Post '92")) %>%
+  ggplot(aes(x = year, y = DiffMeanHourlyPercent / 100, fill = uni_type)) +
   # Remove outliers as they are not relevant for this plot
   geom_boxplot(outlier.shape=NA) +
   # For the appearance of the plot background
   theme_bw() +
   # Customise the scaling displayed for y-axis
-  scale_y_continuous(breaks = seq(0, 30, by = 5)) +
+  #scale_y_continuous(breaks = seq(0, 30, by = 5)) +
+  scale_y_continuous(labels = scales::percent) + 
   # Labels
-  labs(x = "Period of Submission", y = "Avg difference in hourly pay(%)", 
-       fill ="Pre '92\nUniversity ",
-       title = "Difference in pay for men and women employed in universities",
+  labs(x = "", y = "Avg difference in hourly pay(%)", 
+       fill ="University\nCategory",
+       title = "What is the trend in Gender Pay Gap in universities in the UK?",
        subtitle = gsub("\n", "", l_subtitle),
        caption = "Source: UK Government Gender Pay Data, 2018 to 2022") +
   # Annotation for UoS
   # Refer https://r-graph-gallery.com/42-colors-names.html for colour names
-  annotate("point", x = "2017/18", y = 19,
+  annotate("point", x = "2017/18", y = 19 / 100,
            colour = "cornflowerblue", size = 2) +
-  annotate("point", x = "2018/19", y = 17.9,
+  annotate("point", x = "2018/19", y = 17.9 / 100,
            colour = "cornflowerblue", size = 2) +
-  annotate("point", x = "2019/20", y = 17.8,
+  annotate("point", x = "2019/20", y = 17.8 / 100,
            colour = "cornflowerblue", size = 2) +
-  annotate("point", x = "2020/21", y = 16.5,
+  annotate("point", x = "2020/21", y = 16.5 / 100,
            colour = "cornflowerblue", size = 2) +
-  annotate("point", x = "2021/22", y = 15.8,
+  annotate("point", x = "2021/22", y = 15.8 / 100,
            colour = "cornflowerblue", size = 2) +
   # For an arrow pointing to the last UoS annotation
   annotate(
-    geom = "curve", x = 4.6, y = 22, xend = "2021/22", yend = 16, 
+    geom = "curve", x = 5.2, y = 22 / 100, xend = "2021/22", yend = 16 / 100, 
     colour = "cornflowerblue", curvature = .1, 
     arrow = arrow(length = unit(2, "mm"))
   ) +
   # For text for UoS
-  annotate(geom = "text", x = 4.3, y = 24, label = "University of\n   Sheffield", 
+  annotate(geom = "text", x = 5, y = 24 / 100, label = "University of\n   Sheffield", 
            colour = "cornflowerblue", hjust = "left", size = 3) +
   #For pre92 colour
   # Refer https://r-graphics.org/recipe-colors-palette-discrete for palletes
   # We should try to use the same palletes across all plots
-  scale_fill_brewer(palette = "Paired", breaks=c('yes', 'no')) 
+  scale_fill_brewer(palette = "Paired", breaks=c("Pre '92", "Post '92")) 
 
 
