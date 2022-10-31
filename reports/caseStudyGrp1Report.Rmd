@@ -1,10 +1,8 @@
 ---
 title: "The Gender Pay Gap in UK Universities"
-author: "Group 1 MAS6024"
-date: "31/10/2022"
-output: 
-  html_document:
-    theme: yeti
+author: "Group 1 - Ankit Ray, Nitin Mathew, Sharan Pullabhatla, Vyshnav Varma"
+date: "31/Oct/2022"
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -13,14 +11,10 @@ knitr::opts_chunk$set(echo = FALSE,
                       warning = FALSE)
 ```
 
-
-
 ```{r Library Load}
 library(tidyverse)
 library(rmarkdown)
 ```
-
-
 
 ```{r Data Import, cache = TRUE}
 # Import data
@@ -51,20 +45,12 @@ payGapData <- payGapData %>%
 ```
 ---
 
-# 1. Differences in Gender Pay between 2017 and 2022
+# Changes in Gender Pay Gap for the period 2017-22
+> While we see improvements over a 5 year period, there continues to be 
+disparity in pay, more so for universities established prior to 1992
 
 ```{r Plot 1, fig.align='center', fig.width=10, fig.cap = "Figure 1", cache=TRUE}
-# Figure 1 - to reorder later
-# Nitin
-# Box plot showing the difference in the average pay for mean and women across 5 
-# the year period. We show the data separately for Pre and Post '92 unis
-# Write-up - DRAFT, to update
-# The graph shows how much of difference exists in the pay between men and 
-# women in UK universities. The value shown is the average difference across the
-# universities. blah blah blah
-l_subtitle = "While we see improvements, there continues to be significant 
-disparity in pay, more so for universities established prior to 1992"
-
+# Figure 1
 payGapData %>%
   # Limits columns to only required, will use data for all 5 years
   select(EmployerName, DiffMeanHourlyPercent, pre92, year) %>%
@@ -77,13 +63,11 @@ payGapData %>%
   # For the appearance of the plot background
   theme_bw() +
   # Customise the scaling displayed for y-axis
-  #scale_y_continuous(breaks = seq(0, 30, by = 5)) +
   scale_y_continuous(labels = scales::percent) + 
   # Labels
   labs(x = "", y = "Avg difference in hourly pay", 
        fill ="University\nCategory",
-       title = "What is the trend in Gender Pay Gap in universities in the UK?",
-       subtitle = gsub("\n", "", l_subtitle),
+       title = "Gender Pay Gap in UK universities split by Pre and Post '92 universities",
        caption = "Source: UK Government Gender Pay Data, 2018 to 2022") +
   # Annotation for UoS
   # Refer https://r-graph-gallery.com/42-colors-names.html for colour names
@@ -108,26 +92,49 @@ payGapData %>%
            colour = "cornflowerblue", hjust = "left", size = 3) +
   #For pre92 colour
   # Refer https://r-graphics.org/recipe-colors-palette-discrete for palletes
-  # We should try to use the same palletes across all plots
   scale_fill_brewer(palette = "Paired", breaks=c("Pre '92", "Post '92")) 
 ```
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eu 
-condimentum nisl. Nunc feugiat hendrerit nisi. Ut dui ligula, venenatis ut quam 
-ac, molestie maximus purus. Fusce fringilla ligula ac felis pulvinar convallis. 
-Aenean vitae blandit lectus. Praesent elementum, erat vel pharetra luctus, 
-felis purus semper turpis, vehicula laoreet metus tellus in neque. Nunc ipsum 
-ante, scelerisque a mollis non, accumsan vitae ex.
+The data for Figure 1 is as per the **DiffMeanHourlyPercent** column from the
+published reports. This column represents the **Mean % difference between male 
+and female hourly pay (negative = women's mean hourly pay is higher)**. The 
+outliers have been excluded from this plot.
 
-Donec orci sapien, iaculis a lectus eu, interdum aliquet tortor. Cras eget 
-augue ut mauris fringilla condimentum. Suspendisse at neque id justo tempus 
-fermentum. Quisque urna mauris, pellentesque et tellus consectetur, fermentum 
-ornare mauris. Duis a erat nec turpis ornare facilisis non sit amet elit. 
-Integer non aliquam metus, nec vestibulum quam. Aenean semper et lacus quis 
-consectetur. Proin non fermentum justo.
+Figure 1 shows how the official gender pay gap has changed from 2017/18 up 
+until 2021/22. Looking at the interquartile ranges, we see them approximately 
+between **9% and 23%** for the first period and improving slightly to 
+around **8% and 21%** for the last fully published period.
+
+Additionally, we do see a noticeable difference in the gap when looking at the Pre 
+and Post '92 universities with the **Post '92** universities performing better
+over these years.
+
+Finally, looking at the **University of Sheffield**, we find it having slight
+improvements in line with other Pre '92 universities while remaining at the lower 
+end of the 1st quartile for this category of universities for the reported 
+periods.
+
+### Number of submissions at a glance
+```{r No. of Submissions}
+(gpd_cont <- payGapData %>%
+   mutate(`University Category` = recode_factor(pre92, 
+                                                yes = "Pre '92",
+                                                no = "Post '92")) %>%
+   mutate(`Year of Submission` = year)) %>%
+  group_by(`Year of Submission`, `University Category`) %>%
+  summarise("No. of Submissions" = n()) %>%
+  pivot_wider(names_from = `University Category`,
+              values_from = `No. of Submissions`) %>%
+  knitr::kable(caption="Table 1 - Shows how many universities have submitted GPD data", 
+               align='c')
+```
+To provide additional context to the graph in Figure 1, we have Table 1 above 
+showing the number of universities which have submitted their GPD data for the 5 
+year period in scope of this report.
 
 ---
 
 # Data Sources
-The data for the report ir based on the UK Government's official GPD data 
-available from https://gender-pay-gap.service.gov.uk/viewing/download
+* The primary data for the report is based on the UK Government's official GPD 
+data available from https://gender-pay-gap.service.gov.uk/viewing/download
+* The universities have been identified using the data available at https://vle.shef.ac.uk/bbcswebdav/pid-6298247-dt-content-rid-45156957_1/xid-45156957_1
